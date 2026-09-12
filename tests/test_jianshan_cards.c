@@ -3,6 +3,11 @@
 
 int main(void)
 {
+    assert(jianshan_card_count == 3);
+    assert(jianshan_cards[0].quote);
+    assert(!jianshan_cards[1].quote);
+    assert(!jianshan_cards[2].quote);
+
     jianshan_state_t state;
     jianshan_state_init(&state, 3, 1);
     assert(jianshan_state_current(&state) == 1);

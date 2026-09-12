@@ -176,6 +176,19 @@ def check_font_configuration(errors: list[str]) -> None:
             f"compressed fonts: {names}"
         )
 
+    cards_path = ROOT / "main" / "jianshan_cards.c"
+    glyphs_path = ROOT / "assets" / "fonts" / "jianshan-glyphs.txt"
+    if cards_path.is_file() and glyphs_path.is_file():
+        card_table = cards_path.read_text(encoding="utf-8").split("const size_t", 1)[0]
+        string_literals = re.findall(r'"((?:[^"\\]|\\.)*)"', card_table)
+        displayed_cjk = set(CJK_RE.findall("".join(string_literals)))
+        declared_cjk = set(CJK_RE.findall(glyphs_path.read_text(encoding="utf-8")))
+        missing = "".join(sorted(displayed_cjk - declared_cjk))
+        if missing:
+            errors.append(
+                f"{glyphs_path.relative_to(ROOT)}: missing Jianshan card glyphs: {missing}"
+            )
+
 
 def check_issue_forms(errors: list[str]) -> None:
     issue_dir = ROOT / ".github" / "ISSUE_TEMPLATE"

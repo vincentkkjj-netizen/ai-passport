@@ -12,8 +12,10 @@ idf_component_register(
          "demo_low_power.c"
          "demo_jianshan.c"
          "jianshan_cards.c"
-         "../assets/fonts/jianshan_font_16.c"
-         "../assets/fonts/jianshan_font_22.c"
+         "../assets/fonts/jianshan_sans_14.c"
+         "../assets/fonts/jianshan_sans_18.c"
+         "../assets/fonts/jianshan_serif_20.c"
+         "../assets/fonts/jianshan_serif_26.c"
     INCLUDE_DIRS "."
     REQUIRES bsp bt esp_event esp_hw_support esp_netif esp_timer esp_wifi nvs_flash
 )

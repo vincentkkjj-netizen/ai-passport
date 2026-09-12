@@ -17,14 +17,13 @@
 
 ### “见山”中文子集字库
 
-`fonts/jianshan_font_16.c` 与 `fonts/jianshan_font_22.c` 是“见山”demo 使用的
-LVGL 生成字库，覆盖可打印 ASCII 及 `fonts/jianshan-glyphs.txt` 中的中文字符。
-源字体为 Google Fonts 的
-[Noto Sans SC Regular](https://github.com/google/fonts/tree/main/ofl/notosanssc)，
-采用 SIL Open Font License 1.1；许可全文保存在 `fonts/OFL-1.1.txt`。
+四份 `fonts/jianshan_{sans,serif}_*.c` 是“见山”demo 使用的 LVGL 生成字库，
+覆盖可打印 ASCII 及 `fonts/jianshan-glyphs.txt` 中的中文字符。源字体为 Google
+Fonts 的 Noto Sans SC 与 Noto Serif SC，采用 SIL Open Font License 1.1；许可
+全文保存在 `fonts/OFL-1.1.txt`。
 
-两份文件由 `lv_font_conv` 1.5.3 生成，参数分别为 16/22 px、4 bpp、可打印
-ASCII 范围 `0x20-0x7E`，以及字符清单中的 symbols。生成的 C 源码由
+字库由 `lv_font_conv` 1.5.3 生成，参数为黑体 14/18 px、宋体 20/26 px、4 bpp、
+可打印 ASCII 范围 `0x20-0x7E`，以及字符清单中的 symbols。生成的 C 源码由
 `main/CMakeLists.txt` 直接编译；体积较大的源字体不提交到仓库。
 
 ## 图片（images）

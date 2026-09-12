@@ -8,6 +8,9 @@
 
 - Enabled LVGL compressed-font decoding and added a repository guard, fixing blank
   Chinese text on Jianshan cards while numeric labels continued to refresh.
+- Matched the approved paper-style Jianshan preview on-device: 18 px sans-serif
+  fact text, serif titles and short quotations, smaller sources, and natural
+  wrapping so the longest card stays within one screen.
 
 - Added the Jianshan encouragement-card demo with three sourced Chinese cards,
   non-repeating random draws, and in-session history navigation using the three

@@ -19,17 +19,17 @@ Store reusable font files and generated font sources in `fonts/`.
 
 ### Jianshan CJK subsets
 
-`fonts/jianshan_font_16.c` and `fonts/jianshan_font_22.c` are generated LVGL
-fonts for the Jianshan demo. They contain printable ASCII plus the Chinese
-characters in `fonts/jianshan-glyphs.txt`. The source typeface is Noto Sans SC
-Regular from [Google Fonts](https://github.com/google/fonts/tree/main/ofl/notosanssc),
-licensed under the SIL Open Font License 1.1; the license text is stored as
-`fonts/OFL-1.1.txt`.
+The four `fonts/jianshan_{sans,serif}_*.c` files are generated LVGL fonts for
+the Jianshan demo. They contain printable ASCII plus the Chinese characters in
+`fonts/jianshan-glyphs.txt`. The source typefaces are Noto Sans SC and Noto
+Serif SC from Google Fonts, licensed under the SIL Open Font License 1.1; the
+license text is stored as `fonts/OFL-1.1.txt`.
 
-Generate both files with `lv_font_conv` 1.5.3 using 4 bits per pixel, sizes 16
-and 22, printable ASCII range `0x20-0x7E`, and the symbols in the glyph-list
-file. The generated C sources are compiled directly by `main/CMakeLists.txt`;
-the multi-megabyte source font is intentionally not committed.
+Generate the fonts with `lv_font_conv` 1.5.3 using 4 bits per pixel, sizes 14
+and 18 for sans-serif and 20 and 26 for serif, printable ASCII range
+`0x20-0x7E`, and the symbols in the glyph-list file. The generated C sources
+are compiled directly by `main/CMakeLists.txt`; the multi-megabyte source fonts
+are intentionally not committed.
 
 ## Images
 

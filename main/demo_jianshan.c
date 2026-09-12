@@ -1,19 +1,19 @@
 #include "demo.h"
-#include "bsp_battery.h"
 #include "esp_random.h"
 #include "jianshan_cards.h"
 #include "lvgl.h"
 #include "ui_pixel.h"
 
-LV_FONT_DECLARE(jianshan_font_16);
-LV_FONT_DECLARE(jianshan_font_22);
+LV_FONT_DECLARE(jianshan_sans_14);
+LV_FONT_DECLARE(jianshan_sans_18);
+LV_FONT_DECLARE(jianshan_serif_20);
+LV_FONT_DECLARE(jianshan_serif_26);
 
 static lv_obj_t *s_scr;
 static lv_obj_t *s_title;
 static lv_obj_t *s_body;
 static lv_obj_t *s_source;
 static lv_obj_t *s_position;
-static lv_obj_t *s_battery;
 static jianshan_state_t s_state;
 
 static void refresh_card(void)
@@ -24,50 +24,75 @@ static void refresh_card(void)
     lv_label_set_text(s_title, card->title);
     lv_label_set_text(s_body, card->body);
     lv_label_set_text(s_source, card->source);
-    lv_label_set_text_fmt(s_position, "%u/%u",
-                          (unsigned)(s_state.history_pos + 1),
-                          (unsigned)s_state.history_len);
+    lv_label_set_text_fmt(s_position, "%02u / %02u",
+                          (unsigned)(index + 1),
+                          (unsigned)jianshan_card_count);
 
-    int soc = bsp_battery_soc();
-    if (soc < 0) lv_label_set_text(s_battery, "--%");
-    else         lv_label_set_text_fmt(s_battery, "%d%%", soc);
+    lv_obj_set_style_text_font(s_title,
+        card->quote ? &jianshan_sans_14 : &jianshan_serif_20, 0);
+    lv_obj_set_style_text_color(s_title,
+        lv_color_hex(card->quote ? UI_RED : UI_INK), 0);
+    lv_obj_set_style_text_letter_space(s_title, card->quote ? 2 : 0, 0);
+
+    lv_obj_set_style_text_font(s_body,
+        card->quote ? &jianshan_serif_26 : &jianshan_sans_18, 0);
+    lv_obj_set_style_text_line_space(s_body, card->quote ? 12 : 6, 0);
+    lv_obj_update_layout(s_body);
+    lv_obj_align(s_body, LV_ALIGN_CENTER, 0, 8);
 }
 
 void demo_jianshan_enter(void)
 {
-    s_scr = ui_pixel_screen_create("JIANSHAN");
-    lv_obj_t *panel = ui_pixel_panel_create(s_scr, 10, 52, 220, 225, UI_PAPER);
+    s_scr = lv_obj_create(NULL);
+    lv_obj_remove_flag(s_scr, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_bg_color(s_scr, lv_color_hex(UI_PAPER), 0);
+    lv_obj_set_style_border_width(s_scr, 0, 0);
+    lv_obj_set_style_pad_all(s_scr, 0, 0);
 
-    s_battery = lv_label_create(s_scr);
-    lv_obj_set_style_text_font(s_battery, &lv_font_montserrat_14, 0);
-    lv_obj_set_style_text_color(s_battery, lv_color_hex(UI_INK), 0);
-    lv_obj_set_pos(s_battery, 183, 34);
+    lv_obj_t *mark = lv_obj_create(s_scr);
+    lv_obj_remove_flag(mark, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_pos(mark, 18, 16);
+    lv_obj_set_size(mark, 43, 25);
+    lv_obj_set_style_radius(mark, 0, 0);
+    lv_obj_set_style_border_width(mark, 1, 0);
+    lv_obj_set_style_border_color(mark, lv_color_hex(UI_RED), 0);
+    lv_obj_set_style_bg_opa(mark, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_pad_all(mark, 0, 0);
+    lv_obj_t *mark_text = lv_label_create(mark);
+    lv_label_set_text(mark_text, "见山");
+    lv_obj_set_style_text_font(mark_text, &jianshan_sans_14, 0);
+    lv_obj_set_style_text_color(mark_text, lv_color_hex(UI_RED), 0);
+    lv_obj_center(mark_text);
 
-    s_title = lv_label_create(panel);
-    lv_obj_set_style_text_font(s_title, &jianshan_font_16, 0);
-    lv_obj_set_style_text_color(s_title, lv_color_hex(UI_RED), 0);
-    lv_obj_set_width(s_title, 190);
-    lv_obj_align(s_title, LV_ALIGN_TOP_LEFT, 0, 0);
-
-    s_body = lv_label_create(panel);
-    lv_obj_set_style_text_font(s_body, &jianshan_font_22, 0);
-    lv_obj_set_style_text_color(s_body, lv_color_hex(UI_INK), 0);
-    lv_obj_set_style_text_line_space(s_body, 7, 0);
-    lv_obj_set_width(s_body, 190);
-    lv_label_set_long_mode(s_body, LV_LABEL_LONG_WRAP);
-    lv_obj_align(s_body, LV_ALIGN_LEFT_MID, 0, -2);
-
-    s_source = lv_label_create(panel);
-    lv_obj_set_style_text_font(s_source, &jianshan_font_16, 0);
-    lv_obj_set_style_text_color(s_source, lv_color_hex(0x62675F), 0);
-    lv_obj_set_width(s_source, 170);
-    lv_label_set_long_mode(s_source, LV_LABEL_LONG_WRAP);
-    lv_obj_align(s_source, LV_ALIGN_BOTTOM_LEFT, 0, 0);
-
-    s_position = lv_label_create(panel);
+    s_position = lv_label_create(s_scr);
     lv_obj_set_style_text_font(s_position, &lv_font_montserrat_14, 0);
-    lv_obj_set_style_text_color(s_position, lv_color_hex(0x62675F), 0);
-    lv_obj_align(s_position, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
+    lv_obj_set_style_text_color(s_position, lv_color_hex(0x65695D), 0);
+    lv_obj_align(s_position, LV_ALIGN_TOP_RIGHT, -18, 20);
+
+    s_title = lv_label_create(s_scr);
+    lv_obj_set_pos(s_title, 18, 62);
+    lv_obj_set_width(s_title, 204);
+
+    s_body = lv_label_create(s_scr);
+    lv_obj_set_style_text_color(s_body, lv_color_hex(UI_INK), 0);
+    lv_obj_set_width(s_body, 204);
+    lv_label_set_long_mode(s_body, LV_LABEL_LONG_WRAP);
+
+    lv_obj_t *rule = lv_obj_create(s_scr);
+    lv_obj_remove_flag(rule, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_pos(rule, 18, 259);
+    lv_obj_set_size(rule, 204, 1);
+    lv_obj_set_style_border_width(rule, 0, 0);
+    lv_obj_set_style_bg_color(rule, lv_color_hex(0xCCC9B9), 0);
+    lv_obj_set_style_pad_all(rule, 0, 0);
+
+    s_source = lv_label_create(s_scr);
+    lv_obj_set_style_text_font(s_source, &jianshan_sans_14, 0);
+    lv_obj_set_style_text_color(s_source, lv_color_hex(0x65695D), 0);
+    lv_obj_set_style_text_line_space(s_source, 2, 0);
+    lv_obj_set_pos(s_source, 18, 271);
+    lv_obj_set_width(s_source, 204);
+    lv_label_set_long_mode(s_source, LV_LABEL_LONG_WRAP);
 
     jianshan_state_init(&s_state, jianshan_card_count,
                         esp_random() % jianshan_card_count);
@@ -79,7 +104,7 @@ void demo_jianshan_exit(void)
 {
     if (s_scr) {
         lv_obj_delete(s_scr);
-        s_scr = s_title = s_body = s_source = s_position = s_battery = NULL;
+        s_scr = s_title = s_body = s_source = s_position = NULL;
     }
 }
 
