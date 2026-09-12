@@ -7,7 +7,7 @@
 ## Unreleased
 
 - Restyled Jianshan as a black-and-gold ritual interface with a focused warm
-  glow, rotating geometry, restrained 10 px metadata, staged card reveals,
+  glow, lightweight concentric geometry, restrained 10 px metadata, staged card reveals,
   delayed seals, and button-driven card history.
 - Enabled LVGL compressed-font decoding and added a repository guard, fixing blank
   Chinese text on Jianshan cards while numeric labels continued to refresh.

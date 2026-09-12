@@ -21,7 +21,6 @@ static lv_obj_t *s_draw_view;
 static lv_obj_t *s_card_view;
 static lv_obj_t *s_idle_ring;
 static lv_obj_t *s_draw_ring;
-static lv_obj_t *s_draw_diamond;
 static lv_obj_t *s_title;
 static lv_obj_t *s_body;
 static lv_obj_t *s_source;
@@ -60,11 +59,6 @@ static void set_view(lv_obj_t *visible)
 static void set_opa(void *obj, int32_t value)
 {
     lv_obj_set_style_opa(obj, (lv_opa_t)value, 0);
-}
-
-static void set_rotation(void *obj, int32_t value)
-{
-    lv_obj_set_style_transform_rotation(obj, value, 0);
 }
 
 static void animate_opa(lv_obj_t *obj, uint32_t delay, uint32_t duration)
@@ -108,19 +102,16 @@ static lv_obj_t *create_ring(lv_obj_t *parent, int x, int y, int size,
     return ring;
 }
 
-static lv_obj_t *create_diamond(lv_obj_t *parent, int x, int y, int size,
-                                uint32_t color)
+static lv_obj_t *create_glow(lv_obj_t *parent, int x, int y, int size,
+                             uint32_t color)
 {
-    lv_obj_t *diamond = plain_obj(parent);
-    lv_obj_set_pos(diamond, x, y);
-    lv_obj_set_size(diamond, size, size);
-    lv_obj_set_style_radius(diamond, 7, 0);
-    lv_obj_set_style_border_width(diamond, 1, 0);
-    lv_obj_set_style_border_color(diamond, lv_color_hex(color), 0);
-    lv_obj_set_style_transform_pivot_x(diamond, size / 2, 0);
-    lv_obj_set_style_transform_pivot_y(diamond, size / 2, 0);
-    lv_obj_set_style_transform_rotation(diamond, 450, 0);
-    return diamond;
+    lv_obj_t *glow = plain_obj(parent);
+    lv_obj_set_pos(glow, x, y);
+    lv_obj_set_size(glow, size, size);
+    lv_obj_set_style_radius(glow, LV_RADIUS_CIRCLE, 0);
+    lv_obj_set_style_bg_color(glow, lv_color_hex(color), 0);
+    lv_obj_set_style_bg_opa(glow, LV_OPA_COVER, 0);
+    return glow;
 }
 
 static lv_obj_t *create_centered_label(lv_obj_t *parent, const char *text,
@@ -199,15 +190,6 @@ static void begin_draw(void)
     set_view(s_draw_view);
     s_phase = JI_PHASE_DRAWING;
     start_pulse(s_draw_ring, 260);
-    lv_anim_delete(s_draw_diamond, set_rotation);
-    lv_anim_t spin;
-    lv_anim_init(&spin);
-    lv_anim_set_var(&spin, s_draw_diamond);
-    lv_anim_set_exec_cb(&spin, set_rotation);
-    lv_anim_set_values(&spin, 450, 4050);
-    lv_anim_set_duration(&spin, 900);
-    lv_anim_set_repeat_count(&spin, LV_ANIM_REPEAT_INFINITE);
-    lv_anim_start(&spin);
     s_draw_timer = lv_timer_create(finish_draw, 900, NULL);
     lv_timer_set_repeat_count(s_draw_timer, 1);
 }
@@ -218,8 +200,8 @@ static void build_idle(void)
     lv_obj_set_size(s_idle_view, 240, 320);
     create_centered_label(s_idle_view, "JIAN SHAN  ·  PRIVATE ARCHIVE", 26,
                           &lv_font_montserrat_10, JI_GOLD_DIM);
-    create_diamond(s_idle_view, 79, 91, 82, 0x544728);
     s_idle_ring = create_ring(s_idle_view, 64, 76, 112, JI_GOLD_DIM);
+    create_ring(s_idle_view, 78, 90, 84, 0x544728);
     lv_obj_t *emblem = create_ring(s_idle_view, 93, 105, 54, JI_GOLD);
     lv_obj_t *mountain = lv_label_create(emblem);
     lv_label_set_text(mountain, "山");
@@ -241,7 +223,7 @@ static void build_drawing(void)
     create_centered_label(s_draw_view, "JIAN SHAN  ·  DRAWING", 26,
                           &lv_font_montserrat_10, JI_GOLD_DIM);
     s_draw_ring = create_ring(s_draw_view, 61, 72, 118, JI_GOLD);
-    s_draw_diamond = create_diamond(s_draw_view, 79, 90, 82, JI_GOLD_DIM);
+    create_ring(s_draw_view, 77, 88, 86, JI_GOLD_DIM);
     lv_obj_t *inner = create_ring(s_draw_view, 91, 102, 58, JI_GOLD_DIM);
     lv_obj_t *mountain = lv_label_create(inner);
     lv_label_set_text(mountain, "山");
@@ -262,7 +244,7 @@ static void build_card(void)
     lv_obj_t *top = create_centered_label(s_card_view, "JIAN SHAN  ·  I", 12,
                                           &lv_font_montserrat_10, JI_GOLD_DIM);
     lv_obj_set_style_text_letter_space(top, 1, 0);
-    create_diamond(s_card_view, 79, 47, 82, 0x403822);
+    create_ring(s_card_view, 77, 45, 86, 0x403822);
     lv_obj_t *emblem = create_ring(s_card_view, 97, 48, 46, JI_GOLD);
     lv_obj_t *mountain = lv_label_create(emblem);
     lv_label_set_text(mountain, "山");
@@ -316,15 +298,9 @@ void demo_jianshan_enter(void)
     lv_obj_set_style_border_width(s_scr, 0, 0);
     lv_obj_set_style_pad_all(s_scr, 0, 0);
 
-    lv_obj_t *glow = plain_obj(s_scr);
-    lv_obj_set_pos(glow, 80, 91);
-    lv_obj_set_size(glow, 80, 80);
-    lv_obj_set_style_radius(glow, LV_RADIUS_CIRCLE, 0);
-    lv_obj_set_style_bg_color(glow, lv_color_hex(0x2A2415), 0);
-    lv_obj_set_style_bg_opa(glow, LV_OPA_50, 0);
-    lv_obj_set_style_shadow_color(glow, lv_color_hex(0xA47E38), 0);
-    lv_obj_set_style_shadow_opa(glow, LV_OPA_20, 0);
-    lv_obj_set_style_shadow_width(glow, 54, 0);
+    create_glow(s_scr, 35, 46, 170, 0x0D0E0B);
+    create_glow(s_scr, 55, 66, 130, 0x12120D);
+    create_glow(s_scr, 80, 91, 80, 0x1D1A10);
 
     lv_obj_t *frame = plain_obj(s_scr);
     lv_obj_set_pos(frame, 8, 8);
@@ -350,7 +326,7 @@ void demo_jianshan_exit(void)
     }
     if (s_scr) lv_obj_delete(s_scr);
     s_scr = s_idle_view = s_draw_view = s_card_view = NULL;
-    s_idle_ring = s_draw_ring = s_draw_diamond = NULL;
+    s_idle_ring = s_draw_ring = NULL;
     s_title = s_body = s_source = s_position = NULL;
     s_stamp = s_stamp_text = NULL;
 }
