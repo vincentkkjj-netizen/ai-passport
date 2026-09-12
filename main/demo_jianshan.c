@@ -21,6 +21,7 @@ static lv_obj_t *s_draw_view;
 static lv_obj_t *s_card_view;
 static lv_obj_t *s_idle_ring;
 static lv_obj_t *s_draw_ring;
+static lv_obj_t *s_draw_diamond;
 static lv_obj_t *s_title;
 static lv_obj_t *s_body;
 static lv_obj_t *s_source;
@@ -61,6 +62,25 @@ static void set_opa(void *obj, int32_t value)
     lv_obj_set_style_opa(obj, (lv_opa_t)value, 0);
 }
 
+static void set_rotation(void *obj, int32_t value)
+{
+    lv_obj_set_style_transform_rotation(obj, value, 0);
+}
+
+static void animate_opa(lv_obj_t *obj, uint32_t delay, uint32_t duration)
+{
+    lv_anim_delete(obj, set_opa);
+    lv_obj_set_style_opa(obj, LV_OPA_TRANSP, 0);
+    lv_anim_t anim;
+    lv_anim_init(&anim);
+    lv_anim_set_var(&anim, obj);
+    lv_anim_set_exec_cb(&anim, set_opa);
+    lv_anim_set_values(&anim, LV_OPA_TRANSP, LV_OPA_COVER);
+    lv_anim_set_delay(&anim, delay);
+    lv_anim_set_duration(&anim, duration);
+    lv_anim_start(&anim);
+}
+
 static void start_pulse(lv_obj_t *obj, uint32_t duration)
 {
     lv_anim_delete(obj, set_opa);
@@ -88,6 +108,21 @@ static lv_obj_t *create_ring(lv_obj_t *parent, int x, int y, int size,
     return ring;
 }
 
+static lv_obj_t *create_diamond(lv_obj_t *parent, int x, int y, int size,
+                                uint32_t color)
+{
+    lv_obj_t *diamond = plain_obj(parent);
+    lv_obj_set_pos(diamond, x, y);
+    lv_obj_set_size(diamond, size, size);
+    lv_obj_set_style_radius(diamond, 7, 0);
+    lv_obj_set_style_border_width(diamond, 1, 0);
+    lv_obj_set_style_border_color(diamond, lv_color_hex(color), 0);
+    lv_obj_set_style_transform_pivot_x(diamond, size / 2, 0);
+    lv_obj_set_style_transform_pivot_y(diamond, size / 2, 0);
+    lv_obj_set_style_transform_rotation(diamond, 450, 0);
+    return diamond;
+}
+
 static lv_obj_t *create_centered_label(lv_obj_t *parent, const char *text,
                                        int y, const lv_font_t *font,
                                        uint32_t color)
@@ -104,27 +139,12 @@ static lv_obj_t *create_centered_label(lv_obj_t *parent, const char *text,
 
 static void animate_card(void)
 {
-    lv_anim_delete(s_card_view, set_opa);
-    lv_anim_delete(s_stamp, set_opa);
-    lv_obj_set_style_opa(s_card_view, LV_OPA_TRANSP, 0);
-    lv_obj_set_style_opa(s_stamp, LV_OPA_TRANSP, 0);
-
-    lv_anim_t card_anim;
-    lv_anim_init(&card_anim);
-    lv_anim_set_var(&card_anim, s_card_view);
-    lv_anim_set_exec_cb(&card_anim, set_opa);
-    lv_anim_set_values(&card_anim, LV_OPA_TRANSP, LV_OPA_COVER);
-    lv_anim_set_duration(&card_anim, 420);
-    lv_anim_start(&card_anim);
-
-    lv_anim_t stamp_anim;
-    lv_anim_init(&stamp_anim);
-    lv_anim_set_var(&stamp_anim, s_stamp);
-    lv_anim_set_exec_cb(&stamp_anim, set_opa);
-    lv_anim_set_values(&stamp_anim, LV_OPA_TRANSP, LV_OPA_COVER);
-    lv_anim_set_delay(&stamp_anim, 520);
-    lv_anim_set_duration(&stamp_anim, 180);
-    lv_anim_start(&stamp_anim);
+    lv_obj_set_style_opa(s_card_view, LV_OPA_COVER, 0);
+    animate_opa(s_title, 80, 260);
+    animate_opa(s_body, 230, 380);
+    animate_opa(s_source, 410, 260);
+    animate_opa(s_position, 410, 260);
+    animate_opa(s_stamp, 630, 170);
 }
 
 static void refresh_card(bool animate)
@@ -154,6 +174,10 @@ static void refresh_card(bool animate)
     if (animate) animate_card();
     else {
         lv_obj_set_style_opa(s_card_view, LV_OPA_COVER, 0);
+        lv_obj_set_style_opa(s_title, LV_OPA_COVER, 0);
+        lv_obj_set_style_opa(s_body, LV_OPA_COVER, 0);
+        lv_obj_set_style_opa(s_source, LV_OPA_COVER, 0);
+        lv_obj_set_style_opa(s_position, LV_OPA_COVER, 0);
         lv_obj_set_style_opa(s_stamp, LV_OPA_COVER, 0);
     }
 }
@@ -175,6 +199,15 @@ static void begin_draw(void)
     set_view(s_draw_view);
     s_phase = JI_PHASE_DRAWING;
     start_pulse(s_draw_ring, 260);
+    lv_anim_delete(s_draw_diamond, set_rotation);
+    lv_anim_t spin;
+    lv_anim_init(&spin);
+    lv_anim_set_var(&spin, s_draw_diamond);
+    lv_anim_set_exec_cb(&spin, set_rotation);
+    lv_anim_set_values(&spin, 450, 4050);
+    lv_anim_set_duration(&spin, 900);
+    lv_anim_set_repeat_count(&spin, LV_ANIM_REPEAT_INFINITE);
+    lv_anim_start(&spin);
     s_draw_timer = lv_timer_create(finish_draw, 900, NULL);
     lv_timer_set_repeat_count(s_draw_timer, 1);
 }
@@ -183,8 +216,9 @@ static void build_idle(void)
 {
     s_idle_view = plain_obj(s_scr);
     lv_obj_set_size(s_idle_view, 240, 320);
-    create_centered_label(s_idle_view, "JIAN SHAN", 29,
-                          &lv_font_montserrat_14, JI_GOLD_DIM);
+    create_centered_label(s_idle_view, "JIAN SHAN  ·  PRIVATE ARCHIVE", 26,
+                          &lv_font_montserrat_10, JI_GOLD_DIM);
+    create_diamond(s_idle_view, 79, 91, 82, 0x544728);
     s_idle_ring = create_ring(s_idle_view, 64, 76, 112, JI_GOLD_DIM);
     lv_obj_t *emblem = create_ring(s_idle_view, 93, 105, 54, JI_GOLD);
     lv_obj_t *mountain = lv_label_create(emblem);
@@ -195,7 +229,7 @@ static void build_idle(void)
     create_centered_label(s_idle_view, "PRESS OK", 224,
                           &lv_font_montserrat_14, JI_IVORY);
     lv_obj_t *sub = create_centered_label(s_idle_view, "DRAW FROM HISTORY", 255,
-                                          &lv_font_montserrat_14, JI_GOLD_DIM);
+                                          &lv_font_montserrat_10, JI_GOLD_DIM);
     lv_obj_set_style_text_letter_space(sub, 1, 0);
     start_pulse(s_idle_ring, 1500);
 }
@@ -204,9 +238,10 @@ static void build_drawing(void)
 {
     s_draw_view = plain_obj(s_scr);
     lv_obj_set_size(s_draw_view, 240, 320);
-    create_centered_label(s_draw_view, "JIAN SHAN", 29,
-                          &lv_font_montserrat_14, JI_GOLD_DIM);
+    create_centered_label(s_draw_view, "JIAN SHAN  ·  DRAWING", 26,
+                          &lv_font_montserrat_10, JI_GOLD_DIM);
     s_draw_ring = create_ring(s_draw_view, 61, 72, 118, JI_GOLD);
+    s_draw_diamond = create_diamond(s_draw_view, 79, 90, 82, JI_GOLD_DIM);
     lv_obj_t *inner = create_ring(s_draw_view, 91, 102, 58, JI_GOLD_DIM);
     lv_obj_t *mountain = lv_label_create(inner);
     lv_label_set_text(mountain, "山");
@@ -216,7 +251,7 @@ static void build_drawing(void)
     create_centered_label(s_draw_view, "DRAWING...", 226,
                           &lv_font_montserrat_14, JI_IVORY);
     create_centered_label(s_draw_view, "HISTORY ANSWERS", 255,
-                          &lv_font_montserrat_14, JI_GOLD_DIM);
+                          &lv_font_montserrat_10, JI_GOLD_DIM);
 }
 
 static void build_card(void)
@@ -225,9 +260,9 @@ static void build_card(void)
     lv_obj_set_size(s_card_view, 240, 320);
 
     lv_obj_t *top = create_centered_label(s_card_view, "JIAN SHAN  ·  I", 12,
-                                          &lv_font_montserrat_14, JI_GOLD_DIM);
+                                          &lv_font_montserrat_10, JI_GOLD_DIM);
     lv_obj_set_style_text_letter_space(top, 1, 0);
-    create_ring(s_card_view, 61, 34, 118, 0x403822);
+    create_diamond(s_card_view, 79, 47, 82, 0x403822);
     lv_obj_t *emblem = create_ring(s_card_view, 97, 48, 46, JI_GOLD);
     lv_obj_t *mountain = lv_label_create(emblem);
     lv_label_set_text(mountain, "山");
@@ -266,7 +301,7 @@ static void build_card(void)
     lv_obj_center(s_stamp_text);
 
     s_position = lv_label_create(s_card_view);
-    lv_obj_set_style_text_font(s_position, &lv_font_montserrat_14, 0);
+    lv_obj_set_style_text_font(s_position, &lv_font_montserrat_10, 0);
     lv_obj_set_style_text_color(s_position, lv_color_hex(JI_GOLD_DIM), 0);
     lv_obj_align(s_position, LV_ALIGN_BOTTOM_RIGHT, -20, -5);
 }
@@ -280,6 +315,16 @@ void demo_jianshan_enter(void)
     lv_obj_set_style_bg_grad_dir(s_scr, LV_GRAD_DIR_VER, 0);
     lv_obj_set_style_border_width(s_scr, 0, 0);
     lv_obj_set_style_pad_all(s_scr, 0, 0);
+
+    lv_obj_t *glow = plain_obj(s_scr);
+    lv_obj_set_pos(glow, 80, 91);
+    lv_obj_set_size(glow, 80, 80);
+    lv_obj_set_style_radius(glow, LV_RADIUS_CIRCLE, 0);
+    lv_obj_set_style_bg_color(glow, lv_color_hex(0x2A2415), 0);
+    lv_obj_set_style_bg_opa(glow, LV_OPA_50, 0);
+    lv_obj_set_style_shadow_color(glow, lv_color_hex(0xA47E38), 0);
+    lv_obj_set_style_shadow_opa(glow, LV_OPA_20, 0);
+    lv_obj_set_style_shadow_width(glow, 54, 0);
 
     lv_obj_t *frame = plain_obj(s_scr);
     lv_obj_set_pos(frame, 8, 8);
@@ -305,7 +350,7 @@ void demo_jianshan_exit(void)
     }
     if (s_scr) lv_obj_delete(s_scr);
     s_scr = s_idle_view = s_draw_view = s_card_view = NULL;
-    s_idle_ring = s_draw_ring = NULL;
+    s_idle_ring = s_draw_ring = s_draw_diamond = NULL;
     s_title = s_body = s_source = s_position = NULL;
     s_stamp = s_stamp_text = NULL;
 }
