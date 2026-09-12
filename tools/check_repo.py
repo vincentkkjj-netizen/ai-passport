@@ -161,6 +161,22 @@ def check_action_pins(errors: list[str]) -> None:
                 errors.append(f"{path.relative_to(ROOT)}:{line_number}: action must use a full commit SHA: {action}")
 
 
+def check_font_configuration(errors: list[str]) -> None:
+    """Require the LVGL decoder used by generated compressed fonts."""
+    compressed_fonts = []
+    for path in sorted((ROOT / "assets" / "fonts").glob("*.c")):
+        if ".bitmap_format = 1" in path.read_text(encoding="utf-8"):
+            compressed_fonts.append(path.relative_to(ROOT))
+
+    defaults = (ROOT / "sdkconfig.defaults").read_text(encoding="utf-8")
+    if compressed_fonts and "CONFIG_LV_USE_FONT_COMPRESSED=y" not in defaults:
+        names = ", ".join(str(path) for path in compressed_fonts)
+        errors.append(
+            "sdkconfig.defaults: CONFIG_LV_USE_FONT_COMPRESSED=y is required by "
+            f"compressed fonts: {names}"
+        )
+
+
 def check_issue_forms(errors: list[str]) -> None:
     issue_dir = ROOT / ".github" / "ISSUE_TEMPLATE"
     for name in ("feature_request.yml", "usage_question.yml"):
@@ -200,6 +216,7 @@ def main() -> int:
     check_markdown_links(files, errors)
     check_document_languages(files, errors)
     check_action_pins(errors)
+    check_font_configuration(errors)
     check_issue_forms(errors)
     check_sensitive_content(files, errors)
     check_conflict_markers(files, errors)

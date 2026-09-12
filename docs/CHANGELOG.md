@@ -6,6 +6,9 @@
 
 ## Unreleased
 
+- Enabled LVGL compressed-font decoding and added a repository guard, fixing blank
+  Chinese text on Jianshan cards while numeric labels continued to refresh.
+
 - Added the Jianshan encouragement-card demo with three sourced Chinese cards,
   non-repeating random draws, and in-session history navigation using the three
   hardware buttons.
