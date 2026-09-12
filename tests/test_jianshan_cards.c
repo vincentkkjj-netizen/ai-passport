@@ -7,6 +7,9 @@ int main(void)
     assert(jianshan_cards[0].quote);
     assert(!jianshan_cards[1].quote);
     assert(!jianshan_cards[2].quote);
+    assert(jianshan_cards[0].stamp != NULL);
+    assert(jianshan_cards[1].stamp != NULL);
+    assert(jianshan_cards[2].stamp != NULL);
 
     jianshan_state_t state;
     jianshan_state_init(&state, 3, 1);

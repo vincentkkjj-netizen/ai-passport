@@ -10,6 +10,7 @@ typedef struct {
     const char *title;
     const char *body;
     const char *source;
+    const char *stamp;
     bool quote;
 } jianshan_card_t;
 

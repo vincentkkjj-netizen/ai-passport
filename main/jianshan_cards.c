@@ -5,18 +5,21 @@ const jianshan_card_t jianshan_cards[] = {
         .title = "原文 · 1930",
         .body = "星星之火，\n可以燎原。",
         .source = "毛泽东《星星之火，可以燎原》",
+        .stamp = "星火",
         .quote = true,
     },
     {
         .title = "143 天",
         .body = "1943 年，凯利·约翰逊和团队，用 143 天设计并造出了 XP-80 喷气式战斗机原型。",
         .source = "据洛克希德·马丁项目史改写",
+        .stamp = "造出",
         .quote = false,
     },
     {
         .title = "重返苹果",
         .body = "30 岁，乔布斯被苹果解雇。后来，他创办了 NeXT。再后来，苹果收购了 NeXT，他也因此回到了苹果。",
         .source = "据乔布斯 2005 年斯坦福演讲改写",
+        .stamp = "重返",
         .quote = false,
     },
 };

@@ -6,6 +6,8 @@
 
 ## Unreleased
 
+- Restyled Jianshan as a black-and-gold ritual interface with an idle emblem,
+  a timed draw transition, delayed seals, and button-driven card history.
 - Enabled LVGL compressed-font decoding and added a repository guard, fixing blank
   Chinese text on Jianshan cards while numeric labels continued to refresh.
 - Matched the approved paper-style Jianshan preview on-device: 18 px sans-serif
